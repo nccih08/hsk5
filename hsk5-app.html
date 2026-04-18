@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>汉字道 · HSK 5 Master</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1209;
+    --paper: #faf6ef;
+    --aged: #f0e8d5;
+    --red: #c0392b;
+    --red-light: #e74c3c;
+    --gold: #b8860b;
+    --gold-light: #d4a017;
+    --teal: #1a6b72;
+    --teal-light: #2a9d8f;
+    --muted: #8a7a6a;
+    --border: #d4c4a8;
+    --success: #2d6a4f;
+    --warning: #e67e22;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(184,134,11,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(26,107,114,0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Ink wash texture */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ===== LAYOUT ===== */
+  #app { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 0 16px 80px; }
+
+  /* ===== TOP NAV ===== */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .logo {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--red);
+    letter-spacing: 2px;
+  }
+  .logo span { color: var(--gold); }
+  .logo small { font-size: 11px; font-weight: 400; color: var(--muted); display: block; letter-spacing: 1px; font-family: 'Noto Sans SC', sans-serif; }
+
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    background: none; border: 1px solid transparent;
+    padding: 6px 14px; border-radius: 6px;
+    font-size: 12px; cursor: pointer;
+    color: var(--muted); font-family: inherit;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--ink); border-color: var(--border); }
+  .nav-tab.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* ===== STATS BAR ===== */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; margin-bottom: 20px;
+  }
+  .stat-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px;
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .stat-card.red::before { background: var(--red); }
+  .stat-card.gold::before { background: var(--gold); }
+  .stat-card.teal::before { background: var(--teal); }
+  .stat-card.green::before { background: var(--success); }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .stat-val { font-size: 26px; font-weight: 700; color: var(--ink); font-family: 'DM Mono', monospace; margin: 2px 0; }
+  .stat-sub { font-size: 10px; color: var(--muted); }
+
+  /* ===== HOME VIEW ===== */
+  #view-home { }
+
+  .due-banner {
+    background: linear-gradient(135deg, var(--red) 0%, #8b0000 100%);
+    color: white; border-radius: 12px;
+    padding: 20px 24px; margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(192,57,43,0.3);
+  }
+  .due-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(192,57,43,0.4); }
+  .due-banner h2 { font-size: 18px; font-family: 'Noto Serif SC', serif; }
+  .due-banner p { font-size: 12px; opacity: 0.85; margin-top: 3px; }
+  .due-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 36px; font-weight: 500;
+    background: rgba(255,255,255,0.15); border-radius: 10px;
+    padding: 6px 14px;
+  }
+
+  .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .mode-card {
+    background: white; border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .mode-card:hover { border-color: var(--teal); box-shadow: 0 4px 16px rgba(26,107,114,0.1); transform: translateY(-1px); }
+  .mode-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .mode-card h3 { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .mode-card p { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  .section-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px; color: var(--ink);
+    margin: 20px 0 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .lesson-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+  .lesson-btn {
+    background: white; border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; cursor: pointer; transition: all 0.2s;
+    font-family: inherit; font-size: 12px; text-align: left;
+  }
+  .lesson-btn:hover { border-color: var(--gold); background: #fffbf2; }
+  .lesson-btn .l-num { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .lesson-btn .l-count { font-size: 10px; color: var(--teal); margin-top: 2px; }
+  .lesson-btn .l-prog { height: 2px; background: var(--aged); border-radius: 2px; margin-top: 6px; }
+  .lesson-btn .l-prog-fill { height: 100%; background: var(--teal-light); border-radius: 2px; transition: width 0.3s; }
+
+  /* ===== FLASHCARD VIEW ===== */
+  #view-study { }
+
+  .study-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .btn-back {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 12px; cursor: pointer; font-family: inherit;
+    font-size: 12px; color: var(--muted); transition: all 0.2s;
+  }
+  .btn-back:hover { color: var(--ink); border-color: var(--ink); }
+
+  .study-progress { flex: 1; max-width: 300px; margin: 0 16px; }
+  .progress-bar { height: 6px; background: var(--aged); border-radius: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-light)); border-radius: 6px; transition: width 0.4s ease; }
+  .progress-label { font-size: 10px; color: var(--muted); text-align: right; margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+  .mode-badge {
+    background: var(--aged); border-radius: 6px;
+    padding: 4px 10px; font-size: 11px; color: var(--muted);
+  }
+
+  /* Card */
+  .card-stage { perspective: 1200px; margin-bottom: 16px; }
+  .card-inner {
+    position: relative; width: 100%; min-height: 320px;
+    transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .card-inner.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute; width: 100%; min-height: 320px;
+    backface-visibility: hidden;
+    background: white; border: 1px solid var(--border); border-radius: 16px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 24px; cursor: pointer;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+  }
+  .card-face.back { transform: rotateY(180deg); }
+
+  .card-hanzi {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 72px; font-weight: 700; color: var(--ink);
+    line-height: 1; margin-bottom: 16px;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.04);
+  }
+  .card-pinyin { font-size: 20px; color: var(--teal); margin-bottom: 8px; letter-spacing: 1px; }
+  .card-pos {
+    display: inline-block; background: var(--aged);
+    padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--muted);
+    margin-bottom: 12px; font-family: 'DM Mono', monospace;
+  }
+  .card-meaning { font-size: 18px; color: var(--ink); text-align: center; line-height: 1.5; }
+  .card-example {
+    margin-top: 16px; padding: 12px 16px;
+    background: var(--aged); border-radius: 8px; width: 100%; text-align: left;
+  }
+  .card-example .cn { font-family: 'Noto Serif SC', serif; font-size: 15px; color: var(--ink); margin-bottom: 4px; }
+  .card-example .en { font-size: 12px; color: var(--muted); }
+  .card-hint { font-size: 12px; color: var(--muted); margin-top: 16px; }
+
+  /* Audio icon */
+  .audio-btn {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--aged); border: none; border-radius: 50%;
+    width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; transition: all 0.2s; color: var(--teal);
+  }
+  .audio-btn:hover { background: var(--teal); color: white; }
+
+  /* Rating buttons */
+  .rating-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    margin-top: 4px;
+  }
+  .rating-btn {
+    border: none; border-radius: 10px; padding: 12px 4px;
+    cursor: pointer; font-family: inherit; font-weight: 600;
+    font-size: 12px; transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .rating-btn .r-label { font-size: 10px; opacity: 0.75; font-weight: 400; }
+  .rating-btn.again { background: #fde8e8; color: var(--red); }
+  .rating-btn.again:hover { background: var(--red); color: white; }
+  .rating-btn.hard { background: #fef0d8; color: var(--warning); }
+  .rating-btn.hard:hover { background: var(--warning); color: white; }
+  .rating-btn.good { background: #d8f0ea; color: var(--teal); }
+  .rating-btn.good:hover { background: var(--teal); color: white; }
+  .rating-btn.easy { background: #d8f0e0; color: var(--success); }
+  .rating-btn.easy:hover { background: var(--success); color: white; }
+
+  /* ===== RECALL MODE ===== */
+  .recall-card {
+    background: white; border: 1px solid var(--border); border-radius: 16px;
+    padding: 32px; margin-bottom: 16px; min-height: 280px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+  }
+  .recall-prompt { font-size: 14px; color: var(--muted); margin-bottom: 16px; text-align: center; }
+  .recall-big {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 60px; font-weight: 700; color: var(--ink); margin-bottom: 12px;
+  }
+  .recall-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 500px; }
+  .recall-opt {
+    background: var(--aged); border: 2px solid var(--border); border-radius: 10px;
+    padding: 14px; cursor: pointer; font-family: 'Noto Serif SC', serif;
+    font-size: 20px; text-align: center; transition: all 0.2s; color: var(--ink);
+  }
+  .recall-opt:hover { border-color: var(--teal); background: #f0f9f8; }
+  .recall-opt.correct { border-color: var(--success); background: #d8f0e0; color: var(--success); }
+  .recall-opt.wrong { border-color: var(--red); background: #fde8e8; color: var(--red); }
+
+  /* ===== FILL BLANK MODE ===== */
+  .fill-sentence {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 24px; text-align: center; line-height: 1.8;
+    margin-bottom: 20px; color: var(--ink);
+  }
+  .fill-blank {
+    display: inline-block; min-width: 80px; border-bottom: 3px solid var(--gold);
+    text-align: center; color: var(--gold); font-weight: 700;
+  }
+  .fill-input {
+    font-family: 'Noto Serif SC', serif; font-size: 20px;
+    border: 2px solid var(--border); border-radius: 8px;
+    padding: 10px 16px; text-align: center; width: 200px;
+    outline: none; transition: border 0.2s; color: var(--ink);
+    background: white;
+  }
+  .fill-input:focus { border-color: var(--teal); }
+  .fill-input.correct { border-color: var(--success); background: #d8f0e0; }
+  .fill-input.wrong { border-color: var(--red); background: #fde8e8; }
+
+  /* ===== WORD LIST VIEW ===== */
+  #view-list { }
+  .search-bar {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .search-input {
+    flex: 1; border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; font-family: inherit; font-size: 14px;
+    outline: none; background: white; transition: border 0.2s; color: var(--ink);
+  }
+  .search-input:focus { border-color: var(--teal); }
+  .filter-btn {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; background: white; cursor: pointer;
+    font-family: inherit; font-size: 12px; color: var(--muted); transition: all 0.2s;
+  }
+  .filter-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+  .word-table { width: 100%; border-collapse: collapse; }
+  .word-table th {
+    text-align: left; padding: 8px 12px; font-size: 11px;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+    border-bottom: 2px solid var(--border); background: var(--aged);
+  }
+  .word-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  .word-table tr:hover td { background: #faf5ec; }
+  .word-table tr:hover .hanzi-cell { color: var(--red); }
+  .hanzi-cell { font-family: 'Noto Serif SC', serif; font-size: 18px; font-weight: 600; cursor: pointer; }
+  .pinyin-cell { color: var(--teal); font-size: 12px; }
+  .pos-tag { background: var(--aged); padding: 2px 6px; border-radius: 3px; font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  /* SR badge */
+  .sr-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; }
+  .sr-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .sr-new { background: var(--gold); }
+  .sr-learning { background: var(--warning); }
+  .sr-review { background: var(--teal); }
+  .sr-mastered { background: var(--success); }
+
+  /* ===== ANALYTICS VIEW ===== */
+  #view-analytics { }
+  .chart-card {
+    background: white; border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 12px;
+  }
+  .chart-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 14px; }
+  .weak-list { display: flex; flex-direction: column; gap: 6px; }
+  .weak-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; background: var(--aged); border-radius: 8px;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .weak-item:hover { background: #f0e4c8; }
+  .weak-hanzi { font-family: 'Noto Serif SC', serif; font-size: 22px; font-weight: 600; min-width: 40px; }
+  .weak-info { flex: 1; }
+  .weak-meaning { font-size: 12px; color: var(--muted); }
+  .weak-bar-wrap { width: 80px; }
+  .weak-bar { height: 6px; background: var(--aged); border-radius: 3px; overflow: hidden; margin-bottom: 2px; }
+  .weak-bar-fill { height: 100%; border-radius: 3px; }
+  .weak-rate { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; text-align: right; }
+
+  .heatmap { display: grid; grid-template-columns: repeat(26, 1fr); gap: 2px; }
+  .heat-cell {
+    aspect-ratio: 1; border-radius: 2px; background: var(--aged);
+    transition: background 0.2s;
+  }
+  .heat-cell:hover { transform: scale(1.3); }
+
+  /* ===== CONTEXT/STORY VIEW ===== */
+  #view-context { }
+  .story-card {
+    background: white; border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px 32px; margin-bottom: 16px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+  }
+  .story-title {
+    font-family: 'Noto Serif SC', serif; font-size: 18px; font-weight: 700;
+    color: var(--red); margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .story-cn {
+    font-family: 'Noto Serif SC', serif; font-size: 16px; line-height: 2;
+    color: var(--ink); margin-bottom: 16px;
+  }
+  .story-en { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .hl-word {
+    background: linear-gradient(120deg, rgba(212,160,23,0.35) 0%, rgba(212,160,23,0.15) 100%);
+    border-radius: 3px; padding: 0 3px; cursor: pointer;
+    border-bottom: 2px solid var(--gold);
+    transition: background 0.2s;
+    position: relative;
+  }
+  .hl-word:hover { background: rgba(212,160,23,0.5); }
+  .word-tooltip {
+    display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%); background: var(--ink); color: var(--paper);
+    border-radius: 8px; padding: 8px 12px; white-space: nowrap; z-index: 100;
+    font-family: 'Noto Sans SC', sans-serif; font-size: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+  .word-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: var(--ink);
+  }
+  .hl-word:hover .word-tooltip { display: block; }
+
+  /* ===== AI MODAL ===== */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(26,18,9,0.6); z-index: 200;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--paper); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px; max-width: 560px; width: 100%;
+    max-height: 80vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal-title { font-family: 'Noto Serif SC', serif; font-size: 18px; font-weight: 700; color: var(--red); margin-bottom: 4px; }
+  .modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .ai-output {
+    background: white; border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; min-height: 120px;
+    font-family: 'Noto Serif SC', serif; font-size: 15px;
+    line-height: 1.8; color: var(--ink);
+  }
+  .ai-loading { text-align: center; color: var(--muted); font-size: 13px; padding: 20px; }
+  .modal-close {
+    float: right; background: none; border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px;
+    color: var(--muted); font-family: inherit;
+  }
+  .modal-close:hover { background: var(--aged); }
+
+  /* ===== GENERAL BUTTONS ===== */
+  .btn-primary {
+    background: var(--red); color: white; border: none;
+    border-radius: 8px; padding: 10px 20px; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--red-light); transform: translateY(-1px); }
+  .btn-ghost {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 8px 16px; cursor: pointer;
+    font-family: inherit; font-size: 12px; transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+  .flex-center { display: flex; align-items: center; justify-content: center; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .gap-8 { gap: 8px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+
+  /* Session complete */
+  .session-done {
+    text-align: center; padding: 60px 20px;
+  }
+  .session-done .big-emoji { font-size: 60px; margin-bottom: 16px; }
+  .session-done h2 { font-family: 'Noto Serif SC', serif; font-size: 24px; color: var(--ink); margin-bottom: 8px; }
+  .session-done p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+
+  @media(max-width: 600px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .mode-grid { grid-template-columns: repeat(2, 1fr); }
+    .card-hanzi { font-size: 52px; }
+    .recall-options { grid-template-columns: 1fr; }
+    .heatmap { grid-template-columns: repeat(13, 1fr); }
+    .rating-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" style="display:none;position:fixed;inset:0;z-index:999;background:var(--paper);align-items:center;justify-content:center;padding:20px">
+  <div style="background:white;border:1px solid var(--border);border-radius:20px;padding:36px 32px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.12)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-family:'Noto Serif SC',serif;font-size:36px;font-weight:700;color:var(--red)">汉字道</div>
+      <div style="font-size:12px;color:var(--muted);letter-spacing:2px;margin-top:4px">HSK 5 MASTER SYSTEM</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:12px">Login untuk sync data ke semua device ☁️</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="auth-email" type="email" placeholder="Email kamu"
+        style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:inherit;font-size:14px;outline:none;color:var(--ink);background:white" />
+      <input id="auth-pass" type="password" placeholder="Password (min. 6 karakter)"
+        style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:inherit;font-size:14px;outline:none;color:var(--ink);background:white"
+        onkeydown="if(event.key==='Enter')handleLogin()" />
+      <div id="auth-msg" style="font-size:12px;min-height:18px;text-align:center"></div>
+      <button class="btn-primary" onclick="handleLogin()" style="padding:13px;font-size:14px">🔑 Login</button>
+      <button class="btn-ghost" onclick="handleRegister()" style="padding:11px;font-size:13px">✨ Daftar Akun Baru</button>
+    </div>
+    <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--muted)">Data tersimpan aman di Supabase · Bisa multi-device</div>
+  </div>
+</div>
+
+<div id="app">
+  <!-- TOP NAV -->
+  <div class="topbar">
+    <div class="logo">
+      汉字道 <span>·</span> HSK 5
+      <small>MASTER SYSTEM</small>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span id="sync-status" style="font-size:10px;color:var(--muted)">☁️ Synced</span>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showView('home')">主页</button>
+        <button class="nav-tab" onclick="showView('list')">词汇</button>
+        <button class="nav-tab" onclick="showView('context')">语境</button>
+        <button class="nav-tab" onclick="showView('analytics')">分析</button>
+        <button class="nav-tab" onclick="handleLogout()" title="Logout" style="color:var(--red)">出</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-card red">
+      <div class="stat-label">今日待复习</div>
+      <div class="stat-val" id="stat-due">0</div>
+      <div class="stat-sub">Due today</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-label">已学单词</div>
+      <div class="stat-val" id="stat-learned">0</div>
+      <div class="stat-sub">/ 1300 HSK 5</div>
+    </div>
+    <div class="stat-card teal">
+      <div class="stat-label">连续天数</div>
+      <div class="stat-val" id="stat-streak">0</div>
+      <div class="stat-sub">day streak 🔥</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">正确率</div>
+      <div class="stat-val" id="stat-acc">–</div>
+      <div class="stat-sub">accuracy</div>
+    </div>
+  </div>
+
+  <!-- HOME VIEW -->
+  <div id="view-home">
+    <div class="due-banner" onclick="startSession('due')">
+      <div>
+        <h2>📚 开始今日复习</h2>
+        <p>Spaced repetition · 自适应学习</p>
+      </div>
+      <div class="due-badge" id="due-count-banner">0</div>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card" onclick="startSession('flash')">
+        <div class="icon">🎴</div>
+        <h3>闪卡模式</h3>
+        <p>Classic flashcard</p>
+      </div>
+      <div class="mode-card" onclick="startSession('recall')">
+        <div class="icon">🎯</div>
+        <h3>主动回忆</h3>
+        <p>Choose the meaning</p>
+      </div>
+      <div class="mode-card" onclick="startSession('fill')">
+        <div class="icon">✏️</div>
+        <h3>填空练习</h3>
+        <p>Complete the sentence</p>
+      </div>
+      <div class="mode-card" onclick="startSession('audio')">
+        <div class="icon">🔊</div>
+        <h3>听音识字</h3>
+        <p>Pinyin → character</p>
+      </div>
+      <div class="mode-card" onclick="openAIModal()">
+        <div class="icon">🤖</div>
+        <h3>AI 个性化</h3>
+        <p>Smart recommendations</p>
+      </div>
+      <div class="mode-card" onclick="showView('context')">
+        <div class="icon">📖</div>
+        <h3>语境阅读</h3>
+        <p>Learn in context</p>
+      </div>
+    </div>
+
+    <div class="section-title">按课程学习</div>
+    <div class="lesson-grid" id="lesson-grid"></div>
+  </div>
+
+  <!-- STUDY VIEW -->
+  <div id="view-study" style="display:none">
+    <div class="study-header">
+      <button class="btn-back" onclick="endSession()">← 返回</button>
+      <div class="study-progress">
+        <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+        <div class="progress-label"><span id="prog-cur">0</span> / <span id="prog-tot">0</span></div>
+      </div>
+      <div class="mode-badge" id="mode-badge">Flashcard</div>
+    </div>
+    <div id="study-content"></div>
+  </div>
+
+  <!-- WORD LIST VIEW -->
+  <div id="view-list" style="display:none">
+    <div class="search-bar">
+      <input class="search-input" type="text" placeholder="搜索汉字、拼音或含义..." id="search-input" oninput="filterWords()" />
+      <button class="filter-btn active" onclick="setFilter('all', this)">全部</button>
+      <button class="filter-btn" onclick="setFilter('new', this)">🟡 新</button>
+      <button class="filter-btn" onclick="setFilter('weak', this)">🔴 弱</button>
+      <button class="filter-btn" onclick="setFilter('mastered', this)">✅ 掌握</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="word-table">
+        <thead>
+          <tr>
+            <th>汉字</th><th>拼音</th><th>词性</th><th>英义</th><th>状态</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="word-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CONTEXT VIEW -->
+  <div id="view-context" style="display:none">
+    <div class="flex-between mb-8" style="margin-bottom:12px">
+      <div class="section-title" style="margin:0">📖 语境故事</div>
+      <button class="btn-primary" onclick="loadNewStory()">换一篇 ↻</button>
+    </div>
+    <div id="story-container"></div>
+  </div>
+
+  <!-- ANALYTICS VIEW -->
+  <div id="view-analytics" style="display:none">
+    <div class="chart-card">
+      <div class="chart-title">📊 30天学习热力图</div>
+      <div class="heatmap" id="heatmap"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+        <span style="font-size:11px;color:var(--muted)">少</span>
+        <div style="width:12px;height:12px;background:var(--aged);border-radius:2px"></div>
+        <div style="width:12px;height:12px;background:#a8d8b9;border-radius:2px"></div>
+        <div style="width:12px;height:12px;background:#6ab187;border-radius:2px"></div>
+        <div style="width:12px;height:12px;background:var(--success);border-radius:2px"></div>
+        <span style="font-size:11px;color:var(--muted)">多</span>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🔴 需要加强的词汇 (Weak Words)</div>
+      <div class="weak-list" id="weak-list"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">📈 词汇掌握进度</div>
+      <div id="mastery-bars"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AI MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕ 关闭</button>
+    <div class="modal-title">🤖 AI 个性化建议</div>
+    <div class="modal-sub">Based on your performance · 根据你的学习数据</div>
+    <div class="ai-output" id="ai-output">
+      <div class="ai-loading">正在分析你的学习数据...</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-primary" onclick="generateSentence()">✨ 生成练习句子</button>
+      <button class="btn-ghost" onclick="getRecommendations()">📋 词汇推荐</button>
+      <button class="btn-ghost" onclick="getWeakAnalysis()">🔍 弱点分析</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== HSK 5 VOCABULARY DATA =====================
+const VOCAB = [
+  // Lesson 1
+  {id:1,hanzi:"爱护",pinyin:"àihù",pos:"v.",en:"to cherish, to take good care of",lesson:1,ex_cn:"我们要爱护环境。",ex_en:"We should cherish the environment."},
+  {id:2,hanzi:"爱惜",pinyin:"àixī",pos:"v.",en:"to treasure, to use sparingly",lesson:1,ex_cn:"要爱惜粮食，不要浪费。",ex_en:"We should treasure food and not waste it."},
+  {id:3,hanzi:"安慰",pinyin:"ānwèi",pos:"v./n.",en:"to comfort; comfort",lesson:1,ex_cn:"她的话安慰了我。",ex_en:"Her words comforted me."},
+  {id:4,hanzi:"安装",pinyin:"ānzhuāng",pos:"v.",en:"to install, to set up",lesson:1,ex_cn:"请帮我安装这个软件。",ex_en:"Please help me install this software."},
+  {id:5,hanzi:"按照",pinyin:"ànzhào",pos:"prep.",en:"according to, in accordance with",lesson:1,ex_cn:"按照计划进行。",ex_en:"Proceed according to the plan."},
+  // Lesson 2
+  {id:6,hanzi:"报道",pinyin:"bàodào",pos:"v./n.",en:"to report; report",lesson:2,ex_cn:"记者报道了这件事。",ex_en:"The journalist reported on this matter."},
+  {id:7,hanzi:"抱怨",pinyin:"bàoyuàn",pos:"v.",en:"to complain",lesson:2,ex_cn:"他总是抱怨工作太忙。",ex_en:"He always complains about being too busy at work."},
+  {id:8,hanzi:"背景",pinyin:"bèijǐng",pos:"n.",en:"background",lesson:2,ex_cn:"她有很好的家庭背景。",ex_en:"She has a good family background."},
+  {id:9,hanzi:"必要",pinyin:"bìyào",pos:"adj.",en:"necessary, essential",lesson:2,ex_cn:"这是必要的准备工作。",ex_en:"This is the necessary preparation work."},
+  {id:10,hanzi:"毕竟",pinyin:"bìjìng",pos:"adv.",en:"after all, in the final analysis",lesson:2,ex_cn:"毕竟他是你的朋友。",ex_en:"After all, he is your friend."},
+  {id:11,hanzi:"避免",pinyin:"bìmiǎn",pos:"v.",en:"to prevent, to avoid",lesson:2,ex_cn:"我们应该避免犯同样的错误。",ex_en:"We should avoid making the same mistake."},
+  {id:12,hanzi:"表达",pinyin:"biǎodá",pos:"v.",en:"to express, to voice",lesson:2,ex_cn:"他很难表达自己的感情。",ex_en:"He has difficulty expressing his feelings."},
+  {id:13,hanzi:"表面",pinyin:"biǎomiàn",pos:"n.",en:"surface, appearance",lesson:2,ex_cn:"不要只看表面。",ex_en:"Don't just look at the surface."},
+  {id:14,hanzi:"表明",pinyin:"biǎomíng",pos:"v.",en:"to indicate, to manifest",lesson:2,ex_cn:"这表明他的决心。",ex_en:"This indicates his determination."},
+  {id:15,hanzi:"表情",pinyin:"biǎoqíng",pos:"n.",en:"(facial) expression",lesson:2,ex_cn:"她的表情很复杂。",ex_en:"Her expression was very complex."},
+  // Lesson 3
+  {id:16,hanzi:"财产",pinyin:"cáichǎn",pos:"n.",en:"property, fortune",lesson:3,ex_cn:"他把所有财产都捐给了慈善机构。",ex_en:"He donated all his property to charity."},
+  {id:17,hanzi:"采取",pinyin:"cǎiqǔ",pos:"v.",en:"to take, to adopt",lesson:3,ex_cn:"政府采取了紧急措施。",ex_en:"The government took emergency measures."},
+  {id:18,hanzi:"参与",pinyin:"cānyù",pos:"v.",en:"to take part in",lesson:3,ex_cn:"欢迎大家参与讨论。",ex_en:"Everyone is welcome to take part in the discussion."},
+  {id:19,hanzi:"操场",pinyin:"cāochǎng",pos:"n.",en:"sports ground, playground",lesson:3,ex_cn:"孩子们在操场上玩。",ex_en:"The children are playing on the sports ground."},
+  {id:20,hanzi:"曾经",pinyin:"céngjīng",pos:"adv.",en:"once, in the past",lesson:3,ex_cn:"我曾经去过北京。",ex_en:"I once went to Beijing."},
+  {id:21,hanzi:"差距",pinyin:"chājù",pos:"n.",en:"gap, difference",lesson:3,ex_cn:"两者之间差距很大。",ex_en:"There is a big gap between the two."},
+  {id:22,hanzi:"成果",pinyin:"chéngguǒ",pos:"n.",en:"result, achievement",lesson:3,ex_cn:"这是多年努力的成果。",ex_en:"This is the result of years of effort."},
+  {id:23,hanzi:"成就",pinyin:"chéngjiù",pos:"n.",en:"achievement, accomplishment",lesson:3,ex_cn:"他在科学上有很大的成就。",ex_en:"He has great achievements in science."},
+  {id:24,hanzi:"成语",pinyin:"chéngyǔ",pos:"n.",en:"idiom, set phrase",lesson:3,ex_cn:"中文里有很多成语。",ex_en:"There are many idioms in Chinese."},
+  {id:25,hanzi:"诚恳",pinyin:"chéngkěn",pos:"adj.",en:"sincere, earnest",lesson:3,ex_cn:"他的态度很诚恳。",ex_en:"His attitude is very sincere."},
+  // Lesson 4
+  {id:26,hanzi:"创造",pinyin:"chuàngzào",pos:"v.",en:"to create, to produce",lesson:4,ex_cn:"他们创造了新的世界纪录。",ex_en:"They created a new world record."},
+  {id:27,hanzi:"从而",pinyin:"cóng'ér",pos:"conj.",en:"thus, consequently",lesson:4,ex_cn:"加强训练，从而提高成绩。",ex_en:"Strengthen training, thus improving results."},
+  {id:28,hanzi:"存在",pinyin:"cúnzài",pos:"v.",en:"to exist",lesson:4,ex_cn:"问题依然存在。",ex_en:"The problem still exists."},
+  {id:29,hanzi:"达到",pinyin:"dá dào",pos:"v.",en:"to reach, to attain",lesson:4,ex_cn:"他达到了自己的目标。",ex_en:"He attained his goal."},
+  {id:30,hanzi:"代表",pinyin:"dàibiǎo",pos:"n./v.",en:"typical case; to represent",lesson:4,ex_cn:"他代表我们发言。",ex_en:"He spoke on our behalf."},
+  {id:31,hanzi:"导致",pinyin:"dǎozhì",pos:"v.",en:"to cause, to lead to",lesson:4,ex_cn:"压力过大导致生病。",ex_en:"Excessive stress led to illness."},
+  {id:32,hanzi:"道理",pinyin:"dàolǐ",pos:"n.",en:"principle, theory",lesson:4,ex_cn:"这句话很有道理。",ex_en:"This statement makes a lot of sense."},
+  // Lesson 5
+  {id:33,hanzi:"地区",pinyin:"dìqū",pos:"n.",en:"area, region",lesson:5,ex_cn:"这个地区经济发展很快。",ex_en:"The economy in this region is developing rapidly."},
+  {id:34,hanzi:"地位",pinyin:"dìwèi",pos:"n.",en:"position, status",lesson:5,ex_cn:"她在公司里的地位很高。",ex_en:"She holds a high position in the company."},
+  {id:35,hanzi:"典型",pinyin:"diǎnxíng",pos:"adj./n.",en:"typical; typical example",lesson:5,ex_cn:"这是一个典型的例子。",ex_en:"This is a typical example."},
+  {id:36,hanzi:"调查",pinyin:"diàochá",pos:"v./n.",en:"to investigate; investigation",lesson:5,ex_cn:"警察正在调查这起案件。",ex_en:"The police are investigating this case."},
+  {id:37,hanzi:"动作",pinyin:"dòngzuò",pos:"n.",en:"movement, motion",lesson:5,ex_cn:"他的动作很优雅。",ex_en:"His movements are very graceful."},
+  {id:38,hanzi:"独特",pinyin:"dútè",pos:"adj.",en:"unique, distinctive",lesson:5,ex_cn:"她有独特的风格。",ex_en:"She has a unique style."},
+  {id:39,hanzi:"对待",pinyin:"duìdài",pos:"v.",en:"to treat, to deal with",lesson:5,ex_cn:"要公平对待每个人。",ex_en:"Treat everyone fairly."},
+  {id:40,hanzi:"对方",pinyin:"duìfāng",pos:"n.",en:"the other party/side",lesson:5,ex_cn:"谈判时要了解对方的想法。",ex_en:"During negotiations, understand the other party's thoughts."},
+  // Lesson 6
+  {id:41,hanzi:"发挥",pinyin:"fāhuī",pos:"v.",en:"to give play to, to bring into play",lesson:6,ex_cn:"在比赛中发挥出最好的水平。",ex_en:"Bring out your best level in the competition."},
+  {id:42,hanzi:"发明",pinyin:"fāmíng",pos:"v./n.",en:"to invent; invention",lesson:6,ex_cn:"谁发明了电话？",ex_en:"Who invented the telephone?"},
+  {id:43,hanzi:"范围",pinyin:"fànwéi",pos:"n.",en:"range, scope",lesson:6,ex_cn:"考试范围很广。",ex_en:"The exam scope is very wide."},
+  {id:44,hanzi:"方案",pinyin:"fāng'àn",pos:"n.",en:"plan, scheme",lesson:6,ex_cn:"他们提出了一个新方案。",ex_en:"They proposed a new plan."},
+  {id:45,hanzi:"丰富",pinyin:"fēngfù",pos:"adj./v.",en:"rich, abundant; to enrich",lesson:6,ex_cn:"这里的文化非常丰富。",ex_en:"The culture here is very rich."},
+  {id:46,hanzi:"否则",pinyin:"fǒuzé",pos:"conj.",en:"otherwise, or else",lesson:6,ex_cn:"快点走，否则要迟到了。",ex_en:"Hurry up, otherwise we'll be late."},
+  {id:47,hanzi:"负责",pinyin:"fùzé",pos:"v./adj.",en:"to be in charge; responsible",lesson:6,ex_cn:"他负责这个项目。",ex_en:"He is in charge of this project."},
+  {id:48,hanzi:"复杂",pinyin:"fùzá",pos:"adj.",en:"complicated, complex",lesson:6,ex_cn:"这个问题很复杂。",ex_en:"This problem is very complex."},
+  // Lesson 7
+  {id:49,hanzi:"改革",pinyin:"gǎigé",pos:"v./n.",en:"to reform; reform",lesson:7,ex_cn:"他们正在进行教育改革。",ex_en:"They are carrying out educational reform."},
+  {id:50,hanzi:"感激",pinyin:"gǎnjī",pos:"v.",en:"to be grateful, to appreciate",lesson:7,ex_cn:"我非常感激你的帮助。",ex_en:"I am very grateful for your help."},
+  {id:51,hanzi:"高档",pinyin:"gāodàng",pos:"adj.",en:"high-grade, top-end",lesson:7,ex_cn:"这是一家高档餐厅。",ex_en:"This is a high-end restaurant."},
+  {id:52,hanzi:"各自",pinyin:"gèzì",pos:"pron.",en:"each, respective",lesson:7,ex_cn:"大家各自完成自己的任务。",ex_en:"Everyone completes their own tasks."},
+  {id:53,hanzi:"更新",pinyin:"gēngxīn",pos:"v.",en:"to update, to renew",lesson:7,ex_cn:"需要更新软件版本。",ex_en:"Need to update the software version."},
+  {id:54,hanzi:"沟通",pinyin:"gōutōng",pos:"v./n.",en:"to communicate; communication",lesson:7,ex_cn:"良好的沟通很重要。",ex_en:"Good communication is important."},
+  {id:55,hanzi:"鼓励",pinyin:"gǔlì",pos:"v.",en:"to encourage",lesson:7,ex_cn:"老师鼓励学生多提问。",ex_en:"The teacher encourages students to ask more questions."},
+  // Lesson 8
+  {id:56,hanzi:"害羞",pinyin:"hàixiū",pos:"adj.",en:"shy, bashful",lesson:8,ex_cn:"她是个很害羞的女孩。",ex_en:"She is a very shy girl."},
+  {id:57,hanzi:"好奇",pinyin:"hàoqí",pos:"adj.",en:"curious",lesson:8,ex_cn:"孩子们对世界充满好奇。",ex_en:"Children are full of curiosity about the world."},
+  {id:58,hanzi:"合法",pinyin:"héfǎ",pos:"adj.",en:"legal, lawful",lesson:8,ex_cn:"这是合法的行为。",ex_en:"This is a legal action."},
+  {id:59,hanzi:"合理",pinyin:"hélǐ",pos:"adj.",en:"reasonable, rational",lesson:8,ex_cn:"这个要求很合理。",ex_en:"This request is very reasonable."},
+  {id:60,hanzi:"忽视",pinyin:"hūshì",pos:"v.",en:"to ignore, to neglect",lesson:8,ex_cn:"不能忽视这个问题。",ex_en:"This problem cannot be ignored."},
+  {id:61,hanzi:"互联网",pinyin:"hùliánwǎng",pos:"n.",en:"the Internet",lesson:8,ex_cn:"互联网改变了我们的生活。",ex_en:"The Internet has changed our lives."},
+  {id:62,hanzi:"环境",pinyin:"huánjìng",pos:"n.",en:"environment, surroundings",lesson:8,ex_cn:"保护环境是每个人的责任。",ex_en:"Protecting the environment is everyone's responsibility."},
+  // Lesson 9
+  {id:63,hanzi:"机构",pinyin:"jīgòu",pos:"n.",en:"organization, institution",lesson:9,ex_cn:"这是一个非营利机构。",ex_en:"This is a non-profit organization."},
+  {id:64,hanzi:"积极",pinyin:"jījí",pos:"adj.",en:"active, positive, enthusiastic",lesson:9,ex_cn:"他对工作非常积极。",ex_en:"He is very enthusiastic about work."},
+  {id:65,hanzi:"基础",pinyin:"jīchǔ",pos:"n.",en:"foundation, basis",lesson:9,ex_cn:"打好语言基础很重要。",ex_en:"Building a good language foundation is important."},
+  {id:66,hanzi:"即使",pinyin:"jíshǐ",pos:"conj.",en:"even if, even though",lesson:9,ex_cn:"即使很难，我们也要坚持。",ex_en:"Even if it's difficult, we must persevere."},
+  {id:67,hanzi:"集中",pinyin:"jízhōng",pos:"v.",en:"to concentrate, to focus",lesson:9,ex_cn:"请集中注意力。",ex_en:"Please concentrate."},
+  {id:68,hanzi:"记录",pinyin:"jìlù",pos:"v./n.",en:"to record; record",lesson:9,ex_cn:"请把这些记录下来。",ex_en:"Please write these down."},
+  {id:69,hanzi:"坚持",pinyin:"jiānchí",pos:"v.",en:"to persevere, to stick to",lesson:9,ex_cn:"坚持就是胜利。",ex_en:"Perseverance leads to victory."},
+  // Lesson 10
+  {id:70,hanzi:"建立",pinyin:"jiànlì",pos:"v.",en:"to establish, to set up",lesson:10,ex_cn:"两国建立了外交关系。",ex_en:"The two countries established diplomatic relations."},
+  {id:71,hanzi:"交流",pinyin:"jiāoliú",pos:"v./n.",en:"to exchange; exchange",lesson:10,ex_cn:"文化交流促进友谊。",ex_en:"Cultural exchange promotes friendship."},
+  {id:72,hanzi:"结合",pinyin:"jiéhé",pos:"v.",en:"to combine, to integrate",lesson:10,ex_cn:"理论要结合实际。",ex_en:"Theory must be integrated with practice."},
+  {id:73,hanzi:"解决",pinyin:"jiějué",pos:"v.",en:"to solve, to resolve",lesson:10,ex_cn:"我们需要解决这个问题。",ex_en:"We need to solve this problem."},
+  {id:74,hanzi:"尽管",pinyin:"jǐnguǎn",pos:"conj.",en:"even though, despite",lesson:10,ex_cn:"尽管很累，他还是坚持了下来。",ex_en:"Even though he was tired, he persevered."},
+  {id:75,hanzi:"进行",pinyin:"jìnxíng",pos:"v.",en:"to carry out, to conduct",lesson:10,ex_cn:"正在进行比赛。",ex_en:"The competition is underway."},
+  // Lesson 11
+  {id:76,hanzi:"经济",pinyin:"jīngjì",pos:"n./adj.",en:"economy; economical",lesson:11,ex_cn:"中国经济发展很快。",ex_en:"China's economy is developing rapidly."},
+  {id:77,hanzi:"竞争",pinyin:"jìngzhēng",pos:"v./n.",en:"to compete; competition",lesson:11,ex_cn:"市场竞争越来越激烈。",ex_en:"Market competition is becoming increasingly fierce."},
+  {id:78,hanzi:"举办",pinyin:"jǔbàn",pos:"v.",en:"to hold, to host",lesson:11,ex_cn:"他们举办了一场音乐会。",ex_en:"They held a concert."},
+  {id:79,hanzi:"拒绝",pinyin:"jùjué",pos:"v.",en:"to refuse, to reject",lesson:11,ex_cn:"他拒绝了这个邀请。",ex_en:"He refused the invitation."},
+  {id:80,hanzi:"具有",pinyin:"jùyǒu",pos:"v.",en:"to possess, to have",lesson:11,ex_cn:"这个产品具有很多优点。",ex_en:"This product has many advantages."},
+  // Lesson 12
+  {id:81,hanzi:"开展",pinyin:"kāizhǎn",pos:"v.",en:"to carry out, to develop",lesson:12,ex_cn:"学校开展了多种活动。",ex_en:"The school carried out various activities."},
+  {id:82,hanzi:"考虑",pinyin:"kǎolǜ",pos:"v.",en:"to consider, to think about",lesson:12,ex_cn:"我需要认真考虑这个问题。",ex_en:"I need to carefully consider this issue."},
+  {id:83,hanzi:"科技",pinyin:"kējì",pos:"n.",en:"science and technology",lesson:12,ex_cn:"科技改变了世界。",ex_en:"Technology has changed the world."},
+  {id:84,hanzi:"控制",pinyin:"kòngzhì",pos:"v.",en:"to control",lesson:12,ex_cn:"很难控制自己的情绪。",ex_en:"It's hard to control one's emotions."},
+  {id:85,hanzi:"扩大",pinyin:"kuòdà",pos:"v.",en:"to expand, to enlarge",lesson:12,ex_cn:"公司计划扩大规模。",ex_en:"The company plans to expand its scale."},
+  // Lesson 13
+  {id:86,hanzi:"来自",pinyin:"láizì",pos:"v.",en:"to come from",lesson:13,ex_cn:"她来自上海。",ex_en:"She comes from Shanghai."},
+  {id:87,hanzi:"力量",pinyin:"lìliàng",pos:"n.",en:"strength, power",lesson:13,ex_cn:"团结就是力量。",ex_en:"Unity is strength."},
+  {id:88,hanzi:"联系",pinyin:"liánxì",pos:"v./n.",en:"to contact; connection",lesson:13,ex_cn:"请保持联系。",ex_en:"Please keep in touch."},
+  {id:89,hanzi:"了解",pinyin:"liǎojiě",pos:"v.",en:"to understand, to know about",lesson:13,ex_cn:"我想了解中国文化。",ex_en:"I want to understand Chinese culture."},
+  {id:90,hanzi:"领域",pinyin:"lǐngyù",pos:"n.",en:"field, domain, area",lesson:13,ex_cn:"他在这个领域很有经验。",ex_en:"He has a lot of experience in this field."},
+  // Lesson 14
+  {id:91,hanzi:"矛盾",pinyin:"máodùn",pos:"n./adj.",en:"contradiction; contradictory",lesson:14,ex_cn:"这两种说法互相矛盾。",ex_en:"These two statements contradict each other."},
+  {id:92,hanzi:"面临",pinyin:"miànlín",pos:"v.",en:"to face, to be confronted with",lesson:14,ex_cn:"我们面临很多挑战。",ex_en:"We face many challenges."},
+  {id:93,hanzi:"目标",pinyin:"mùbiāo",pos:"n.",en:"goal, objective, target",lesson:14,ex_cn:"我们要实现自己的目标。",ex_en:"We must achieve our goals."},
+  {id:94,hanzi:"目前",pinyin:"mùqián",pos:"n.",en:"currently, at present",lesson:14,ex_cn:"目前还没有解决方案。",ex_en:"Currently there is no solution."},
+  // Lesson 15
+  {id:95,hanzi:"内容",pinyin:"nèiróng",pos:"n.",en:"content, substance",lesson:15,ex_cn:"这本书的内容很丰富。",ex_en:"The content of this book is very rich."},
+  {id:96,hanzi:"能源",pinyin:"néngyuán",pos:"n.",en:"energy resources",lesson:15,ex_cn:"节约能源很重要。",ex_en:"Saving energy is very important."},
+  {id:97,hanzi:"努力",pinyin:"nǔlì",pos:"v./adj.",en:"to work hard; hardworking",lesson:15,ex_cn:"只要努力，就能成功。",ex_en:"As long as you work hard, you can succeed."},
+  // Lesson 16
+  {id:98,hanzi:"培养",pinyin:"péiyǎng",pos:"v.",en:"to cultivate, to develop",lesson:16,ex_cn:"学校培养了很多人才。",ex_en:"The school has cultivated many talents."},
+  {id:99,hanzi:"批评",pinyin:"pīpíng",pos:"v./n.",en:"to criticize; criticism",lesson:16,ex_cn:"老师批评了他的错误。",ex_en:"The teacher criticized his mistake."},
+  {id:100,hanzi:"平衡",pinyin:"pínghéng",pos:"v./adj./n.",en:"to balance; balanced; balance",lesson:16,ex_cn:"保持工作和生活的平衡。",ex_en:"Maintain balance between work and life."},
+  {id:101,hanzi:"普遍",pinyin:"pǔbiàn",pos:"adj.",en:"universal, widespread",lesson:16,ex_cn:"这个问题很普遍。",ex_en:"This problem is very widespread."},
+  // More vocabulary
+  {id:102,hanzi:"气氛",pinyin:"qìfēn",pos:"n.",en:"atmosphere, ambiance",lesson:1,ex_cn:"会议的气氛很紧张。",ex_en:"The atmosphere of the meeting was very tense."},
+  {id:103,hanzi:"强调",pinyin:"qiángdiào",pos:"v.",en:"to emphasize, to stress",lesson:2,ex_cn:"老师强调了这个知识点。",ex_en:"The teacher emphasized this knowledge point."},
+  {id:104,hanzi:"情况",pinyin:"qíngkuàng",pos:"n.",en:"situation, condition",lesson:3,ex_cn:"请介绍一下情况。",ex_en:"Please introduce the situation."},
+  {id:105,hanzi:"取得",pinyin:"qǔdé",pos:"v.",en:"to achieve, to obtain",lesson:4,ex_cn:"她取得了优秀的成绩。",ex_en:"She achieved excellent results."},
+  {id:106,hanzi:"热烈",pinyin:"rèliè",pos:"adj.",en:"warm, enthusiastic",lesson:5,ex_cn:"大家热烈鼓掌。",ex_en:"Everyone applauded warmly."},
+  {id:107,hanzi:"认识",pinyin:"rènshi",pos:"v./n.",en:"to know, to recognize; understanding",lesson:6,ex_cn:"我认识她很多年了。",ex_en:"I have known her for many years."},
+  {id:108,hanzi:"任务",pinyin:"rènwù",pos:"n.",en:"task, mission",lesson:7,ex_cn:"完成这个任务需要时间。",ex_en:"Completing this task takes time."},
+  {id:109,hanzi:"社会",pinyin:"shèhuì",pos:"n.",en:"society",lesson:8,ex_cn:"社会不断在进步。",ex_en:"Society is constantly progressing."},
+  {id:110,hanzi:"深刻",pinyin:"shēnkè",pos:"adj.",en:"deep, profound",lesson:9,ex_cn:"他给我留下了深刻的印象。",ex_en:"He left a profound impression on me."},
+  {id:111,hanzi:"实际",pinyin:"shíjì",pos:"adj./n.",en:"actual, practical; reality",lesson:10,ex_cn:"理论要联系实际。",ex_en:"Theory must be connected to reality."},
+  {id:112,hanzi:"实现",pinyin:"shíxiàn",pos:"v.",en:"to realize, to achieve",lesson:11,ex_cn:"他终于实现了自己的梦想。",ex_en:"He finally realized his dream."},
+  {id:113,hanzi:"收入",pinyin:"shōurù",pos:"n.",en:"income, revenue",lesson:12,ex_cn:"他的收入很稳定。",ex_en:"His income is very stable."},
+  {id:114,hanzi:"数据",pinyin:"shùjù",pos:"n.",en:"data, statistics",lesson:13,ex_cn:"根据最新数据显示。",ex_en:"According to the latest data."},
+  {id:115,hanzi:"顺序",pinyin:"shùnxù",pos:"n.",en:"order, sequence",lesson:14,ex_cn:"按照顺序来做。",ex_en:"Do it in order."},
+  {id:116,hanzi:"随着",pinyin:"suízhe",pos:"prep.",en:"along with, as",lesson:15,ex_cn:"随着时间的推移，情况改变了。",ex_en:"As time passed, the situation changed."},
+  {id:117,hanzi:"探索",pinyin:"tànsuǒ",pos:"v.",en:"to explore",lesson:16,ex_cn:"科学家们在探索宇宙的奥秘。",ex_en:"Scientists are exploring the mysteries of the universe."},
+  {id:118,hanzi:"态度",pinyin:"tàidù",pos:"n.",en:"attitude",lesson:1,ex_cn:"学习态度很重要。",ex_en:"Learning attitude is very important."},
+  {id:119,hanzi:"特别",pinyin:"tèbié",pos:"adv./adj.",en:"especially; special",lesson:2,ex_cn:"这道菜特别好吃。",ex_en:"This dish is especially delicious."},
+  {id:120,hanzi:"提高",pinyin:"tígāo",pos:"v.",en:"to raise, to improve",lesson:3,ex_cn:"我想提高我的汉语水平。",ex_en:"I want to improve my Chinese level."},
+  {id:121,hanzi:"通过",pinyin:"tōngguò",pos:"prep./v.",en:"by means of; to pass",lesson:4,ex_cn:"通过努力，他成功了。",ex_en:"Through hard work, he succeeded."},
+  {id:122,hanzi:"突出",pinyin:"tūchū",pos:"v./adj.",en:"to highlight; prominent",lesson:5,ex_cn:"她的成绩非常突出。",ex_en:"Her achievements are very prominent."},
+  {id:123,hanzi:"推动",pinyin:"tuīdòng",pos:"v.",en:"to push forward, to promote",lesson:6,ex_cn:"科技推动了社会发展。",ex_en:"Technology promotes social development."},
+  {id:124,hanzi:"完善",pinyin:"wánshàn",pos:"v./adj.",en:"to improve; perfect",lesson:7,ex_cn:"需要完善这个制度。",ex_en:"This system needs to be improved."},
+  {id:125,hanzi:"稳定",pinyin:"wěndìng",pos:"v./adj.",en:"to stabilize; stable",lesson:8,ex_cn:"经济保持稳定增长。",ex_en:"The economy maintains stable growth."},
+  {id:126,hanzi:"吸引",pinyin:"xīyǐn",pos:"v.",en:"to attract",lesson:9,ex_cn:"这个展览吸引了很多观众。",ex_en:"This exhibition attracted many visitors."},
+  {id:127,hanzi:"现象",pinyin:"xiànxiàng",pos:"n.",en:"phenomenon",lesson:10,ex_cn:"这是一个有趣的社会现象。",ex_en:"This is an interesting social phenomenon."},
+  {id:128,hanzi:"相当",pinyin:"xiāngdāng",pos:"adv.",en:"quite, fairly, considerably",lesson:11,ex_cn:"这道题相当难。",ex_en:"This question is quite difficult."},
+  {id:129,hanzi:"效果",pinyin:"xiàoguǒ",pos:"n.",en:"effect, result",lesson:12,ex_cn:"治疗效果很好。",ex_en:"The treatment effect is very good."},
+  {id:130,hanzi:"心理",pinyin:"xīnlǐ",pos:"n.",en:"psychology, mental",lesson:13,ex_cn:"运动对心理健康有好处。",ex_en:"Exercise is good for mental health."},
+  {id:131,hanzi:"行为",pinyin:"xíngwéi",pos:"n.",en:"behavior, conduct",lesson:14,ex_cn:"这种行为是不对的。",ex_en:"This kind of behavior is wrong."},
+  {id:132,hanzi:"需求",pinyin:"xūqiú",pos:"n.",en:"demand, need, requirement",lesson:15,ex_cn:"市场需求在增加。",ex_en:"Market demand is increasing."},
+  {id:133,hanzi:"延伸",pinyin:"yánshēn",pos:"v.",en:"to extend, to stretch",lesson:16,ex_cn:"道路向远方延伸。",ex_en:"The road stretches into the distance."},
+  {id:134,hanzi:"严格",pinyin:"yángé",pos:"adj.",en:"strict, rigorous",lesson:1,ex_cn:"他对自己的要求很严格。",ex_en:"He is very strict with himself."},
+  {id:135,hanzi:"研究",pinyin:"yánjiū",pos:"v./n.",en:"to research; research",lesson:2,ex_cn:"他在研究量子物理。",ex_en:"He is researching quantum physics."},
+  {id:136,hanzi:"依靠",pinyin:"yīkào",pos:"v./n.",en:"to rely on; support",lesson:3,ex_cn:"不能总是依靠别人。",ex_en:"You can't always rely on others."},
+  {id:137,hanzi:"意识",pinyin:"yìshí",pos:"v./n.",en:"to realize; consciousness",lesson:4,ex_cn:"他意识到自己的错误。",ex_en:"He realized his mistake."},
+  {id:138,hanzi:"影响",pinyin:"yǐngxiǎng",pos:"v./n.",en:"to influence; influence",lesson:5,ex_cn:"父母对孩子的影响很大。",ex_en:"Parents have a great influence on children."},
+  {id:139,hanzi:"应用",pinyin:"yìngyòng",pos:"v./n.",en:"to apply; application",lesson:6,ex_cn:"这项技术有广泛的应用。",ex_en:"This technology has wide applications."},
+  {id:140,hanzi:"优势",pinyin:"yōushì",pos:"n.",en:"advantage, superiority",lesson:7,ex_cn:"我们要发挥自己的优势。",ex_en:"We should make use of our advantages."},
+  {id:141,hanzi:"有效",pinyin:"yǒuxiào",pos:"adj.",en:"effective, valid",lesson:8,ex_cn:"这个方法很有效。",ex_en:"This method is very effective."},
+  {id:142,hanzi:"与其",pinyin:"yǔqí",pos:"conj.",en:"rather than",lesson:9,ex_cn:"与其等待，不如行动。",ex_en:"Rather than waiting, take action."},
+  {id:143,hanzi:"原则",pinyin:"yuánzé",pos:"n.",en:"principle",lesson:10,ex_cn:"坚持原则很重要。",ex_en:"Sticking to principles is important."},
+  {id:144,hanzi:"运用",pinyin:"yùnyòng",pos:"v.",en:"to use, to apply",lesson:11,ex_cn:"要善于运用知识。",ex_en:"Be good at applying knowledge."},
+  {id:145,hanzi:"在于",pinyin:"zàiyú",pos:"v.",en:"to lie in, to consist in",lesson:12,ex_cn:"成功在于坚持不懈。",ex_en:"Success lies in perseverance."},
+  {id:146,hanzi:"增加",pinyin:"zēngjiā",pos:"v.",en:"to increase, to add",lesson:13,ex_cn:"需要增加投入。",ex_en:"Investment needs to be increased."},
+  {id:147,hanzi:"展示",pinyin:"zhǎnshì",pos:"v.",en:"to show, to display",lesson:14,ex_cn:"她展示了自己的才华。",ex_en:"She displayed her talent."},
+  {id:148,hanzi:"整体",pinyin:"zhěngtǐ",pos:"n./adj.",en:"whole, overall",lesson:15,ex_cn:"要从整体上看问题。",ex_en:"Look at problems from an overall perspective."},
+  {id:149,hanzi:"支持",pinyin:"zhīchí",pos:"v./n.",en:"to support; support",lesson:16,ex_cn:"感谢大家的支持。",ex_en:"Thank you for everyone's support."},
+  {id:150,hanzi:"主要",pinyin:"zhǔyào",pos:"adj.",en:"main, principal",lesson:1,ex_cn:"这是主要原因。",ex_en:"This is the main reason."},
+  {id:151,hanzi:"自然",pinyin:"zìrán",pos:"n./adj.",en:"nature; natural",lesson:2,ex_cn:"保护自然环境很重要。",ex_en:"Protecting the natural environment is important."},
+  {id:152,hanzi:"综合",pinyin:"zōnghé",pos:"adj./v.",en:"comprehensive; to synthesize",lesson:3,ex_cn:"需要综合考虑各种因素。",ex_en:"Need to comprehensively consider various factors."},
+  {id:153,hanzi:"总结",pinyin:"zǒngjié",pos:"v./n.",en:"to summarize; summary",lesson:4,ex_cn:"请做一个总结。",ex_en:"Please make a summary."},
+  {id:154,hanzi:"组织",pinyin:"zǔzhī",pos:"v./n.",en:"to organize; organization",lesson:5,ex_cn:"他负责组织这次活动。",ex_en:"He is responsible for organizing this event."},
+  {id:155,hanzi:"做到",pinyin:"zuòdào",pos:"v.",en:"to achieve, to accomplish",lesson:6,ex_cn:"说到要做到。",ex_en:"You must do what you say."},
+  {id:156,hanzi:"积累",pinyin:"jīlěi",pos:"v.",en:"to accumulate",lesson:7,ex_cn:"需要不断积累经验。",ex_en:"Experience needs to be continuously accumulated."},
+  {id:157,hanzi:"逐渐",pinyin:"zhújiàn",pos:"adv.",en:"gradually",lesson:8,ex_cn:"天气逐渐变凉。",ex_en:"The weather is gradually getting cooler."},
+  {id:158,hanzi:"广泛",pinyin:"guǎngfàn",pos:"adj.",en:"extensive, wide",lesson:9,ex_cn:"这个话题受到广泛关注。",ex_en:"This topic has received widespread attention."},
+  {id:159,hanzi:"优秀",pinyin:"yōuxiù",pos:"adj.",en:"outstanding, excellent",lesson:10,ex_cn:"他是一名优秀的学生。",ex_en:"He is an outstanding student."},
+  {id:160,hanzi:"确实",pinyin:"quèshí",pos:"adv.",en:"indeed, truly",lesson:11,ex_cn:"这确实是个好方法。",ex_en:"This is indeed a good method."},
+];
+
+// ===================== SPACED REPETITION ENGINE =====================
+const SRS_INTERVALS = { // days
+  again: 0.0069, // 10 min
+  hard: 1,
+  good: 3,
+  easy: 7
+};
+const SRS_EASE = { again: 0.85, hard: 0.95, good: 1.0, easy: 1.2 };
+
+let srsData = {};
+let stats = { streak: 0, totalReviews: 0, correct: 0, lastStudyDate: null };
+let sessionQueue = [];
+let sessionIdx = 0;
+let sessionMode = 'flash';
+let cardFlipped = false;
+let filterMode = 'all';
+
+function initSRS() {
+  const saved = localStorage.getItem('hsk5_srs');
+  if (saved) srsData = JSON.parse(saved);
+  const savedStats = localStorage.getItem('hsk5_stats');
+  if (savedStats) stats = JSON.parse(savedStats);
+  
+  // Init new cards
+  VOCAB.forEach(w => {
+    if (!srsData[w.id]) {
+      srsData[w.id] = { interval: 0, ease: 2.5, dueDate: Date.now(), reviews: 0, errors: 0, state: 'new' };
+    }
+  });
+  saveSRS();
+}
+
+function saveSRS() {
+  localStorage.setItem('hsk5_srs', JSON.stringify(srsData));
+  localStorage.setItem('hsk5_stats', JSON.stringify(stats));
+}
+
+function getDueCards() {
+  const now = Date.now();
+  return VOCAB.filter(w => srsData[w.id].dueDate <= now);
+}
+
+function scheduleCard(wordId, rating) {
+  const card = srsData[wordId];
+  const mult = SRS_EASE[rating];
+  const dayMs = 86400000;
+  
+  if (rating === 'again') {
+    card.interval = SRS_INTERVALS.again;
+    card.ease = Math.max(1.3, card.ease * mult);
+    card.state = 'learning';
+    card.errors = (card.errors || 0) + 1;
+  } else {
+    card.interval = Math.max(SRS_INTERVALS[rating], card.interval * card.ease * mult);
+    card.ease = Math.min(3.0, card.ease * (rating === 'easy' ? 1.05 : 1.0));
+    card.state = card.interval > 21 ? 'mastered' : card.interval > 3 ? 'review' : 'learning';
+  }
+  
+  card.dueDate = Date.now() + card.interval * dayMs;
+  card.reviews = (card.reviews || 0) + 1;
+  stats.totalReviews++;
+  if (rating === 'good' || rating === 'easy') stats.correct++;
+  
+  saveSRS();
+  updateStats();
+}
+
+function updateStats() {
+  const due = getDueCards().length;
+  const learned = VOCAB.filter(w => srsData[w.id].state !== 'new').length;
+  document.getElementById('stat-due').textContent = due;
+  document.getElementById('stat-learned').textContent = learned;
+  document.getElementById('due-count-banner').textContent = due;
+  
+  // Streak
+  const today = new Date().toDateString();
+  if (stats.lastStudyDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (stats.lastStudyDate === yesterday) stats.streak = (stats.streak || 0) + 1;
+    else if (stats.lastStudyDate !== today) stats.streak = 1;
+    stats.lastStudyDate = today;
+    saveSRS();
+  }
+  document.getElementById('stat-streak').textContent = stats.streak || 0;
+  
+  const acc = stats.totalReviews > 0 ? Math.round(stats.correct / stats.totalReviews * 100) : '–';
+  document.getElementById('stat-acc').textContent = acc === '–' ? '–' : acc + '%';
+}
+
+// ===================== VIEWS =====================
+function showView(name) {
+  ['home','study','list','context','analytics'].forEach(v => {
+    document.getElementById('view-' + v).style.display = v === name ? '' : 'none';
+  });
+  document.querySelectorAll('.nav-tab').forEach((t, i) => {
+    t.classList.toggle('active', ['home','list','context','analytics'][i] === name);
+  });
+  if (name === 'list') renderWordList();
+  if (name === 'analytics') renderAnalytics();
+  if (name === 'context') loadNewStory();
+}
+
+// ===================== LESSON GRID =====================
+function renderLessonGrid() {
+  const lessons = {};
+  VOCAB.forEach(w => {
+    if (!lessons[w.lesson]) lessons[w.lesson] = [];
+    lessons[w.lesson].push(w);
+  });
+  const el = document.getElementById('lesson-grid');
+  el.innerHTML = Object.entries(lessons).map(([l, words]) => {
+    const mastered = words.filter(w => srsData[w.id]?.state === 'mastered').length;
+    const pct = Math.round(mastered / words.length * 100);
+    return `<button class="lesson-btn" onclick="startLessonSession(${l})">
+      <div class="l-num">第 ${l} 课</div>
+      <div style="font-size:13px;font-weight:600;color:var(--ink);margin:2px 0">Lesson ${l}</div>
+      <div class="l-count">✅ ${mastered}/${words.length} mastered</div>
+      <div class="l-prog"><div class="l-prog-fill" style="width:${pct}%"></div></div>
+    </button>`;
+  }).join('');
+}
+
+// ===================== STUDY SESSION =====================
+function startSession(mode) {
+  sessionMode = mode;
+  let cards;
+  if (mode === 'due') {
+    cards = getDueCards();
+    if (cards.length === 0) cards = VOCAB.slice(0, 20); // fallback
+  } else {
+    cards = shuffleArr([...VOCAB]).slice(0, 20);
+  }
+  sessionQueue = shuffleArr(cards);
+  sessionIdx = 0;
+  cardFlipped = false;
+  
+  showView('study');
+  document.getElementById('mode-badge').textContent = {
+    flash: '🎴 Flashcard', recall: '🎯 Recall', fill: '✏️ Fill Blank',
+    audio: '🔊 Audio', due: '📚 Review'
+  }[mode] || mode;
+  
+  updateProgress();
+  renderStudyCard();
+}
+
+function startLessonSession(lesson) {
+  sessionMode = 'flash';
+  sessionQueue = shuffleArr(VOCAB.filter(w => w.lesson == lesson));
+  sessionIdx = 0;
+  cardFlipped = false;
+  showView('study');
+  document.getElementById('mode-badge').textContent = `📖 Lesson ${lesson}`;
+  updateProgress();
+  renderStudyCard();
+}
+
+function updateProgress() {
+  const pct = sessionQueue.length > 0 ? (sessionIdx / sessionQueue.length * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-cur').textContent = sessionIdx;
+  document.getElementById('prog-tot').textContent = sessionQueue.length;
+}
+
+function renderStudyCard() {
+  if (sessionIdx >= sessionQueue.length) {
+    showSessionDone();
+    return;
+  }
+  
+  const word = sessionQueue[sessionIdx];
+  const mode = sessionMode === 'due' ? 'flash' : sessionMode;
+  
+  if (mode === 'recall' || sessionMode === 'recall') renderRecallCard(word);
+  else if (mode === 'fill' || sessionMode === 'fill') renderFillCard(word);
+  else if (mode === 'audio' || sessionMode === 'audio') renderAudioCard(word);
+  else renderFlashCard(word);
+}
+
+function renderFlashCard(word) {
+  cardFlipped = false;
+  document.getElementById('study-content').innerHTML = `
+    <div class="card-stage" onclick="flipCard()">
+      <div class="card-inner" id="card-inner">
+        <div class="card-face front">
+          <button class="audio-btn" onclick="event.stopPropagation();speak('${word.hanzi}')">🔊</button>
+          <div class="card-hanzi">${word.hanzi}</div>
+          <div class="card-hint">点击翻转 · Click to reveal</div>
+        </div>
+        <div class="card-face back">
+          <button class="audio-btn" onclick="event.stopPropagation();speak('${word.hanzi}')">🔊</button>
+          <div class="card-pinyin">${word.pinyin}</div>
+          <div class="card-pos">${word.pos}</div>
+          <div class="card-meaning">${word.en}</div>
+          <div class="card-example">
+            <div class="cn">${word.ex_cn}</div>
+            <div class="en">${word.ex_en}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="rating-row" style="display:none">
+      <div class="rating-row">
+        <button class="rating-btn again" onclick="rateCard('again', ${word.id})">
+          <span>😰</span> Again <span class="r-label">&lt;10min</span>
+        </button>
+        <button class="rating-btn hard" onclick="rateCard('hard', ${word.id})">
+          <span>😅</span> Hard <span class="r-label">1 day</span>
+        </button>
+        <button class="rating-btn good" onclick="rateCard('good', ${word.id})">
+          <span>😊</span> Good <span class="r-label">3 days</span>
+        </button>
+        <button class="rating-btn easy" onclick="rateCard('easy', ${word.id})">
+          <span>😎</span> Easy <span class="r-label">7 days</span>
+        </button>
+      </div>
+    </div>`;
+}
+
+function flipCard() {
+  if (cardFlipped) return;
+  cardFlipped = true;
+  document.getElementById('card-inner').classList.add('flipped');
+  setTimeout(() => {
+    document.getElementById('rating-row').style.display = '';
+  }, 400);
+}
+
+function renderRecallCard(word) {
+  // Pick 3 wrong options
+  const wrong = shuffleArr(VOCAB.filter(w => w.id !== word.id)).slice(0, 3);
+  const options = shuffleArr([word, ...wrong]);
+  
+  document.getElementById('study-content').innerHTML = `
+    <div class="recall-card">
+      <div class="recall-prompt">选择正确的含义 · Choose the correct meaning</div>
+      <div class="recall-big">${word.hanzi}</div>
+      <div style="color:var(--teal);margin-bottom:16px;font-size:16px">${word.pinyin}</div>
+      <div class="recall-options" id="recall-opts">
+        ${options.map(opt => `
+          <button class="recall-opt" onclick="checkRecall(this, ${opt.id === word.id}, ${word.id})">
+            ${opt.en}
+          </button>`).join('')}
+      </div>
+    </div>`;
+}
+
+function checkRecall(el, isCorrect, wordId) {
+  document.querySelectorAll('.recall-opt').forEach(b => b.style.pointerEvents = 'none');
+  el.classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) {
+    // Show correct
+    document.querySelectorAll('.recall-opt').forEach(b => {
+      const w = VOCAB.find(v => v.en === b.textContent.trim());
+      if (w && w.id === wordId) b.classList.add('correct');
+    });
+  }
+  scheduleCard(wordId, isCorrect ? 'good' : 'again');
+  setTimeout(() => { sessionIdx++; updateProgress(); renderStudyCard(); }, 1200);
+}
+
+function renderFillCard(word) {
+  const sentence = word.ex_cn.replace(word.hanzi, `<span class="fill-blank" id="fill-answer" style="min-width:${word.hanzi.length * 24}px">${'　'.repeat(word.hanzi.length)}</span>`);
+  
+  document.getElementById('study-content').innerHTML = `
+    <div class="recall-card">
+      <div class="recall-prompt">填写空白处 · Fill in the blank</div>
+      <div class="fill-sentence">${sentence}</div>
+      <div style="margin-bottom:8px;font-size:13px;color:var(--muted)">${word.ex_en}</div>
+      <input class="fill-input" id="fill-inp" type="text" placeholder="输入汉字..." 
+        onkeydown="if(event.key==='Enter')checkFill(${word.id})" autofocus />
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+        <button class="btn-primary" onclick="checkFill(${word.id})">确认 ✓</button>
+        <button class="btn-ghost" onclick="skipFill(${word.id})">跳过 →</button>
+      </div>
+    </div>`;
+}
+
+function checkFill(wordId) {
+  const word = VOCAB.find(w => w.id === wordId);
+  const inp = document.getElementById('fill-inp');
+  const val = inp.value.trim();
+  const correct = val === word.hanzi;
+  inp.classList.add(correct ? 'correct' : 'wrong');
+  document.getElementById('fill-answer').textContent = word.hanzi;
+  document.getElementById('fill-answer').style.color = correct ? 'var(--success)' : 'var(--red)';
+  scheduleCard(wordId, correct ? 'good' : 'again');
+  setTimeout(() => { sessionIdx++; updateProgress(); renderStudyCard(); }, 1500);
+}
+
+function skipFill(wordId) {
+  scheduleCard(wordId, 'again');
+  sessionIdx++; updateProgress(); renderStudyCard();
+}
+
+function renderAudioCard(word) {
+  // Show pinyin, guess character
+  const wrong = shuffleArr(VOCAB.filter(w => w.id !== word.id)).slice(0, 3);
+  const options = shuffleArr([word, ...wrong]);
+  
+  document.getElementById('study-content').innerHTML = `
+    <div class="recall-card">
+      <div class="recall-prompt">根据拼音选择汉字 · Choose the character for this pinyin</div>
+      <button class="btn-primary" style="font-size:20px;margin-bottom:16px" onclick="speak('${word.hanzi}')">
+        🔊 ${word.pinyin}
+      </button>
+      <div class="recall-options">
+        ${options.map(opt => `
+          <button class="recall-opt" style="font-family:'Noto Serif SC',serif;font-size:22px" 
+            onclick="checkRecall(this, ${opt.id === word.id}, ${word.id})">
+            ${opt.hanzi}
+          </button>`).join('')}
+      </div>
+    </div>`;
+  
+  // Auto-play audio
+  setTimeout(() => speak(word.hanzi), 200);
+}
+
+function rateCard(rating, wordId) {
+  scheduleCard(wordId, rating);
+  sessionIdx++;
+  cardFlipped = false;
+  updateProgress();
+  renderStudyCard();
+}
+
+function endSession() {
+  saveSRS();
+  showView('home');
+  renderLessonGrid();
+  updateStats();
+}
+
+function showSessionDone() {
+  const correct = sessionQueue.length > 0 ? Math.round(stats.correct / Math.max(stats.totalReviews, 1) * 100) : 0;
+  document.getElementById('study-content').innerHTML = `
+    <div class="session-done">
+      <div class="big-emoji">🎉</div>
+      <h2>复习完成！Session Complete!</h2>
+      <p>${sessionQueue.length} cards reviewed · Keep up the great work!</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-primary" onclick="endSession()">← 返回主页</button>
+        <button class="btn-ghost" onclick="startSession('flash')">再来一组 ↻</button>
+      </div>
+    </div>`;
+}
+
+// ===================== WORD LIST =====================
+let currentFilter = 'all';
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  filterWords();
+}
+
+function filterWords() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  let words = VOCAB;
+  
+  if (currentFilter === 'new') words = words.filter(w => srsData[w.id]?.state === 'new');
+  else if (currentFilter === 'weak') words = words.filter(w => (srsData[w.id]?.errors || 0) >= 2);
+  else if (currentFilter === 'mastered') words = words.filter(w => srsData[w.id]?.state === 'mastered');
+  
+  if (q) words = words.filter(w => 
+    w.hanzi.includes(q) || w.pinyin.toLowerCase().includes(q) || w.en.toLowerCase().includes(q)
+  );
+  
+  renderWordTable(words);
+}
+
+function renderWordList() {
+  filterWords();
+}
+
+function renderWordTable(words) {
+  const stateColors = { new: 'sr-new', learning: 'sr-learning', review: 'sr-review', mastered: 'sr-mastered' };
+  const stateLabels = { new: '新词', learning: '学习中', review: '复习', mastered: '掌握' };
+  
+  document.getElementById('word-table-body').innerHTML = words.slice(0, 200).map(w => {
+    const sr = srsData[w.id] || { state: 'new', errors: 0 };
+    return `<tr>
+      <td class="hanzi-cell" onclick="quickStudy(${w.id})">${w.hanzi}</td>
+      <td class="pinyin-cell">${w.pinyin}</td>
+      <td><span class="pos-tag">${w.pos}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${w.en}</td>
+      <td>
+        <span class="sr-badge">
+          <span class="sr-dot ${stateColors[sr.state] || 'sr-new'}"></span>
+          ${stateLabels[sr.state] || '新词'}
+        </span>
+        ${sr.errors > 0 ? `<br><span style="font-size:10px;color:var(--red)">❌ ${sr.errors}次错误</span>` : ''}
+      </td>
+      <td>
+        <button class="btn-ghost" style="padding:4px 8px;font-size:11px" onclick="quickStudy(${w.id})">学习</button>
+        <button class="audio-btn" style="position:static;width:28px;height:28px;font-size:12px" onclick="speak('${w.hanzi}')">🔊</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function quickStudy(wordId) {
+  const word = VOCAB.find(w => w.id === wordId);
+  sessionQueue = [word];
+  sessionIdx = 0;
+  sessionMode = 'flash';
+  cardFlipped = false;
+  showView('study');
+  document.getElementById('mode-badge').textContent = '🎴 Quick Study';
+  updateProgress();
+  renderStudyCard();
+}
+
+// ===================== ANALYTICS =====================
+function renderAnalytics() {
+  renderHeatmap();
+  renderWeakList();
+  renderMasteryBars();
+}
+
+function renderHeatmap() {
+  const el = document.getElementById('heatmap');
+  const cells = Array.from({length: 30}, (_, i) => {
+    const count = Math.floor(Math.random() * 30); // In real use, track daily counts
+    const intensity = count === 0 ? 0 : count < 5 ? 1 : count < 15 ? 2 : 3;
+    const colors = ['var(--aged)', '#a8d8b9', '#6ab187', 'var(--success)'];
+    return `<div class="heat-cell" style="background:${colors[intensity]}" title="${count} cards reviewed"></div>`;
+  });
+  el.innerHTML = cells.join('');
+}
+
+function renderWeakList() {
+  const weakWords = VOCAB
+    .filter(w => (srsData[w.id]?.errors || 0) > 0)
+    .sort((a, b) => (srsData[b.id]?.errors || 0) - (srsData[a.id]?.errors || 0))
+    .slice(0, 8);
+  
+  const el = document.getElementById('weak-list');
+  if (weakWords.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">🎉 没有弱词！继续学习吧。<br>No weak words yet! Keep studying.</div>';
+    return;
+  }
+  
+  el.innerHTML = weakWords.map(w => {
+    const errors = srsData[w.id]?.errors || 0;
+    const reviews = srsData[w.id]?.reviews || 1;
+    const errRate = Math.round(errors / reviews * 100);
+    const barColor = errRate > 60 ? 'var(--red)' : errRate > 30 ? 'var(--warning)' : 'var(--gold)';
+    return `<div class="weak-item" onclick="quickStudy(${w.id})">
+      <div class="weak-hanzi">${w.hanzi}</div>
+      <div class="weak-info">
+        <div style="font-size:12px;color:var(--teal)">${w.pinyin}</div>
+        <div class="weak-meaning">${w.en}</div>
+      </div>
+      <div class="weak-bar-wrap">
+        <div class="weak-bar"><div class="weak-bar-fill" style="width:${errRate}%;background:${barColor}"></div></div>
+        <div class="weak-rate">${errors}错 / ${reviews}次</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMasteryBars() {
+  const states = {
+    new: VOCAB.filter(w => !srsData[w.id] || srsData[w.id].state === 'new').length,
+    learning: VOCAB.filter(w => srsData[w.id]?.state === 'learning').length,
+    review: VOCAB.filter(w => srsData[w.id]?.state === 'review').length,
+    mastered: VOCAB.filter(w => srsData[w.id]?.state === 'mastered').length
+  };
+  const total = VOCAB.length;
+  
+  const bars = [
+    { label: '🟡 新词 New', count: states.new, color: 'var(--gold)', pct: states.new/total },
+    { label: '🟠 学习中 Learning', count: states.learning, color: 'var(--warning)', pct: states.learning/total },
+    { label: '🔵 复习 Review', count: states.review, color: 'var(--teal)', pct: states.review/total },
+    { label: '✅ 掌握 Mastered', count: states.mastered, color: 'var(--success)', pct: states.mastered/total },
+  ];
+  
+  document.getElementById('mastery-bars').innerHTML = bars.map(b => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span>${b.label}</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--muted)">${b.count} / ${total}</span>
+      </div>
+      <div style="height:8px;background:var(--aged);border-radius:4px;overflow:hidden">
+        <div style="width:${b.pct*100}%;height:100%;background:${b.color};border-radius:4px;transition:width 0.6s ease"></div>
+      </div>
+    </div>`).join('');
+}
+
+// ===================== CONTEXT STORIES =====================
+const STORIES = [
+  {
+    title: "在大城市工作的挑战",
+    cn: "随着经济的发展，越来越多的年轻人选择去大城市工作。他们积极地寻找机会，努力实现自己的目标。然而，大城市的生活压力也导致了许多问题。许多人感到孤独，开始怀念从前的生活。尽管如此，他们仍然坚持，因为他们相信通过努力可以取得成功。",
+    en: "As the economy develops, more and more young people choose to work in big cities. They actively seek opportunities and work hard to achieve their goals. However, life pressure in big cities has also led to many problems. Many people feel lonely and begin to miss their former lives. Despite this, they persevere because they believe success can be achieved through hard work.",
+    highlights: ["随着","积极","实现","目标","导致","尽管","坚持","通过","取得"]
+  },
+  {
+    title: "科技与社会进步",
+    cn: "科技的快速发展对社会产生了深刻的影响。互联网的普遍使用改变了人们的生活方式，使沟通变得更加方便。然而，这也带来了一些矛盾：虽然人们在网络上联系更加频繁，但面对面的交流却减少了。如何在科技发展和传统价值之间找到平衡，是现代社会面临的重要课题。",
+    en: "The rapid development of technology has had a profound impact on society. The widespread use of the Internet has changed people's lifestyles, making communication more convenient. However, this has also brought some contradictions: although people connect more frequently online, face-to-face communication has decreased. How to find a balance between technological development and traditional values is an important issue that modern society faces.",
+    highlights: ["科技","深刻","影响","互联网","普遍","沟通","矛盾","平衡","面临"]
+  },
+  {
+    title: "环境保护的重要性",
+    cn: "环境问题已经成为全球关注的焦点。工业的快速发展虽然带来了经济上的成果，但同时也对自然环境造成了严重的破坏。各国政府已经意识到这个问题，纷纷采取措施保护环境。个人也应该积极参与环保行动，爱护身边的自然环境，为子孙后代留下美好的家园。",
+    en: "Environmental issues have become a global concern. Although rapid industrial development has brought economic achievements, it has also caused serious damage to the natural environment. Governments of various countries have realized this problem and have taken measures to protect the environment. Individuals should also actively participate in environmental protection actions, cherish the natural environment around them, and leave a beautiful homeland for future generations.",
+    highlights: ["环境","成果","意识","采取","积极","参与","爱护","自然"]
+  }
+];
+
+let currentStoryIdx = 0;
+
+function loadNewStory() {
+  currentStoryIdx = (currentStoryIdx + 1) % STORIES.length;
+  renderStory(STORIES[currentStoryIdx]);
+}
+
+function renderStory(story) {
+  let cn = story.cn;
+  story.highlights.forEach(word => {
+    const w = VOCAB.find(v => v.hanzi === word);
+    if (w) {
+      cn = cn.replaceAll(word, `<span class="hl-word">${word}<span class="word-tooltip">${w.pinyin} · ${w.en}</span></span>`);
+    }
+  });
+  
+  document.getElementById('story-container').innerHTML = `
+    <div class="story-card">
+      <div class="story-title">📜 ${story.title}</div>
+      <div class="story-cn">${cn}</div>
+      <div class="story-en">${story.en}</div>
+      <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">🔑 关键词汇 · Key vocabulary (hover to see meaning)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${story.highlights.map(w => {
+            const v = VOCAB.find(x => x.hanzi === w);
+            return v ? `<span class="hl-word" style="cursor:pointer" onclick="quickStudy(${v.id})">${w}<span class="word-tooltip">${v.pinyin} · ${v.en}</span></span>` : '';
+          }).join('')}
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn-ghost" onclick="startContextSession()">📚 学习这些词汇</button>
+    </div>`;
+}
+
+function startContextSession() {
+  const story = STORIES[currentStoryIdx];
+  sessionQueue = story.highlights
+    .map(h => VOCAB.find(w => w.hanzi === h))
+    .filter(Boolean);
+  sessionIdx = 0;
+  sessionMode = 'flash';
+  cardFlipped = false;
+  showView('study');
+  document.getElementById('mode-badge').textContent = '📖 Context Study';
+  updateProgress();
+  renderStudyCard();
+}
+
+// ===================== AI MODAL =====================
+function openAIModal() {
+  document.getElementById('modal-overlay').classList.add('show');
+  getRecommendations();
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+async function callClaude(prompt) {
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      messages: [{ role: "user", content: prompt }]
+    })
+  });
+  const data = await response.json();
+  return data.content?.[0]?.text || "Unable to get response.";
+}
+
+async function getRecommendations() {
+  document.getElementById('ai-output').innerHTML = '<div class="ai-loading">🤖 AI正在分析你的学习数据... Analyzing...</div>';
+  
+  const weakWords = VOCAB
+    .filter(w => (srsData[w.id]?.errors || 0) >= 1)
+    .slice(0, 10)
+    .map(w => `${w.hanzi}(${w.pinyin}): ${w.en}`).join('\n');
+  
+  const masteredCount = VOCAB.filter(w => srsData[w.id]?.state === 'mastered').length;
+  
+  const prompt = `You are an expert Chinese language teacher. A student is studying HSK 5 vocabulary.
+
+Stats:
+- Mastered words: ${masteredCount}/${VOCAB.length}
+- Weak words (errors): 
+${weakWords || 'None yet - just started!'}
+
+Please give:
+1. 2-3 specific study tips based on their weak words
+2. A recommended study priority
+3. One encouraging message in Chinese (with English translation)
+
+Keep it concise and actionable. Use emojis to make it engaging.`;
+
+  try {
+    const result = await callClaude(prompt);
+    document.getElementById('ai-output').innerHTML = result.replace(/\n/g, '<br>');
+  } catch (e) {
+    document.getElementById('ai-output').innerHTML = `<div style="color:var(--muted)">⚠️ AI connection unavailable. Keep practicing! 继续加油！<br><br>
+    <strong>General Tips:</strong><br>
+    • Review weak words daily<br>
+    • Use context learning for better retention<br>
+    • 每天坚持学习！</div>`;
+  }
+}
+
+async function generateSentence() {
+  const weakWords = VOCAB
+    .filter(w => (srsData[w.id]?.errors || 0) >= 1)
+    .slice(0, 5);
+  
+  if (weakWords.length === 0) {
+    document.getElementById('ai-output').innerHTML = '还没有弱词！先学一些词汇吧。<br>No weak words yet! Study some vocabulary first.';
+    return;
+  }
+  
+  document.getElementById('ai-output').innerHTML = '<div class="ai-loading">✨ 正在生成练习句子...</div>';
+  
+  const words = weakWords.map(w => w.hanzi).join('、');
+  const prompt = `Create 3 practice sentences in Chinese (HSK 5 level) that use these words: ${words}
+  
+  Format each as:
+  Chinese: [sentence]
+  Pinyin: [pinyin]
+  English: [translation]
+  
+  Make them natural, interesting, and slightly challenging.`;
+  
+  try {
+    const result = await callClaude(prompt);
+    document.getElementById('ai-output').innerHTML = '<strong>✨ 练习句子 Practice Sentences:</strong><br><br>' + result.replace(/\n/g, '<br>');
+  } catch (e) {
+    document.getElementById('ai-output').innerHTML = '⚠️ Please try again later.';
+  }
+}
+
+async function getWeakAnalysis() {
+  document.getElementById('ai-output').innerHTML = '<div class="ai-loading">🔍 深度分析中...</div>';
+  
+  const wordData = VOCAB
+    .filter(w => srsData[w.id]?.reviews > 0)
+    .sort((a, b) => (srsData[b.id]?.errors || 0) - (srsData[a.id]?.errors || 0))
+    .slice(0, 15)
+    .map(w => `${w.hanzi}(${w.pinyin}|${w.en}): ${srsData[w.id]?.errors || 0} errors in ${srsData[w.id]?.reviews || 0} reviews`);
+  
+  if (wordData.length === 0) {
+    document.getElementById('ai-output').innerHTML = '还没有学习数据！开始学习后再来查看分析。<br>No study data yet! Start studying first.';
+    return;
+  }
+  
+  const prompt = `HSK 5 student learning data:
+${wordData.join('\n')}
+
+Analyze patterns in their mistakes. What types of words do they struggle with? (by part of speech, by meaning category, by complexity?) Give specific advice. Be concise.`;
+
+  try {
+    const result = await callClaude(prompt);
+    document.getElementById('ai-output').innerHTML = '<strong>🔍 学习分析 Learning Analysis:</strong><br><br>' + result.replace(/\n/g, '<br>');
+  } catch (e) {
+    document.getElementById('ai-output').innerHTML = '⚠️ AI unavailable. Check analytics tab for manual data.';
+  }
+}
+
+// ===================== AUDIO =====================
+function speak(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    u.rate = 0.85;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+// ===================== UTILS =====================
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ===================== SUPABASE SYNC =====================
+const SUPABASE_URL = 'https://nvppvfrorzelqktyfjvr.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52cHB2ZnJvcnplbHFrdHlmanZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MzA0MjAsImV4cCI6MjA5MjEwNjQyMH0.NLn6jvDKZewY_SIsdtH5J4IgL50vBC7ZL5GsihI7whE';
+
+let currentUserId = null;
+let syncTimeout = null;
+let isSyncing = false;
+
+const sbFetch = (path, opts = {}) => fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+  ...opts,
+  headers: {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'resolution=merge-duplicates',
+    ...(opts.headers || {})
+  }
+});
+
+// ---- AUTH UI ----
+function showAuthScreen() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+function hideAuthScreen() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+async function handleLogin() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass = document.getElementById('auth-pass').value;
+  if (!email || !pass) return showAuthMsg('Isi email dan password dulu!', 'error');
+
+  showAuthMsg('⏳ Masuk...', 'info');
+
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pass })
+  });
+  const data = await res.json();
+
+  if (data.access_token) {
+    currentUserId = data.user.id;
+    localStorage.setItem('hsk5_uid', currentUserId);
+    localStorage.setItem('hsk5_token', data.access_token);
+    showAuthMsg('✅ Berhasil!', 'success');
+    setTimeout(() => { hideAuthScreen(); bootApp(); }, 600);
+  } else {
+    showAuthMsg(data.error_description || 'Login gagal. Cek email/password.', 'error');
+  }
+}
+
+async function handleRegister() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass = document.getElementById('auth-pass').value;
+  if (!email || !pass) return showAuthMsg('Isi email dan password dulu!', 'error');
+  if (pass.length < 6) return showAuthMsg('Password minimal 6 karakter.', 'error');
+
+  showAuthMsg('⏳ Mendaftar...', 'info');
+
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pass })
+  });
+  const data = await res.json();
+
+  if (data.user || data.id) {
+    showAuthMsg('✅ Akun dibuat! Silakan login.', 'success');
+  } else if (data.error === 'User already registered') {
+    showAuthMsg('Email sudah terdaftar, silakan login.', 'error');
+  } else {
+    showAuthMsg(data.msg || data.error_description || 'Gagal daftar.', 'error');
+  }
+}
+
+function handleLogout() {
+  localStorage.removeItem('hsk5_uid');
+  localStorage.removeItem('hsk5_token');
+  currentUserId = null;
+  showAuthScreen();
+}
+
+function showAuthMsg(msg, type) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = msg;
+  el.style.color = type === 'error' ? 'var(--red)' : type === 'success' ? 'var(--success)' : 'var(--teal)';
+}
+
+function setSyncStatus(status) {
+  // status: 'syncing' | 'ok' | 'offline' | 'error'
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  const map = { syncing: '⏳ Syncing...', ok: '☁️ Synced', offline: '📴 Offline', error: '⚠️ Sync error' };
+  const col = { syncing: 'var(--gold)', ok: 'var(--success)', offline: 'var(--muted)', error: 'var(--red)' };
+  el.textContent = map[status];
+  el.style.color = col[status];
+}
+
+// ---- CLOUD PUSH/PULL ----
+async function pushToCloud() {
+  if (!currentUserId) return;
+  isSyncing = true;
+  setSyncStatus('syncing');
+
+  try {
+    // Push all srsData as bulk rows
+    const rows = Object.entries(srsData).map(([wordId, data]) => ({
+      user_id: currentUserId,
+      word_id: parseInt(wordId),
+      data: data,
+      updated_at: new Date().toISOString()
+    }));
+
+    // Batch in groups of 50
+    for (let i = 0; i < rows.length; i += 50) {
+      const batch = rows.slice(i, i + 50);
+      await sbFetch('srs_data', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify(batch)
+      });
+    }
+
+    // Push stats
+    await sbFetch('user_stats', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify([{ user_id: currentUserId, stats, updated_at: new Date().toISOString() }])
+    });
+
+    setSyncStatus('ok');
+  } catch (e) {
+    setSyncStatus('error');
+  }
+  isSyncing = false;
+}
+
+async function pullFromCloud() {
+  if (!currentUserId) return;
+  setSyncStatus('syncing');
+
+  try {
+    const [srsRes, statsRes] = await Promise.all([
+      sbFetch(`srs_data?user_id=eq.${currentUserId}&select=word_id,data`),
+      sbFetch(`user_stats?user_id=eq.${currentUserId}&select=stats`)
+    ]);
+
+    const srsRows = await srsRes.json();
+    const statsRows = await statsRes.json();
+
+    if (Array.isArray(srsRows) && srsRows.length > 0) {
+      srsRows.forEach(row => { srsData[row.word_id] = row.data; });
+      saveSRS();
+    }
+
+    if (Array.isArray(statsRows) && statsRows.length > 0) {
+      stats = { ...stats, ...statsRows[0].stats };
+      saveSRS();
+    }
+
+    setSyncStatus('ok');
+  } catch (e) {
+    setSyncStatus('offline');
+  }
+}
+
+// Debounced sync — after every rating, wait 3s then push
+function schedulSync() {
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => pushToCloud(), 3000);
+}
+
+// Override saveSRS to also trigger cloud sync
+const _origSaveSRS = saveSRS;
+saveSRS = function() {
+  _origSaveSRS();
+  schedulSync();
+};
+
+// ===================== INIT =====================
+async function bootApp() {
+  initSRS();
+  await pullFromCloud();
+  updateStats();
+  renderLessonGrid();
+  renderStory(STORIES[0]);
+}
+
+// Check if already logged in
+const savedUid = localStorage.getItem('hsk5_uid');
+if (savedUid) {
+  currentUserId = savedUid;
+  hideAuthScreen();
+  bootApp();
+} else {
+  showAuthScreen();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (document.getElementById('view-study').style.display === 'none') return;
+  const map = { '1': 'again', '2': 'hard', '3': 'good', '4': 'easy', ' ': 'flip' };
+  if (e.key === ' ' && !cardFlipped) { e.preventDefault(); flipCard(); }
+  if (cardFlipped && map[e.key] && ['1','2','3','4'].includes(e.key)) {
+    const word = sessionQueue[sessionIdx];
+    if (word) rateCard(map[e.key], word.id);
+  }
+});
+</script>
+</body>
+</html>
